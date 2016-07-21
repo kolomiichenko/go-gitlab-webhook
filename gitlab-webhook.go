@@ -42,6 +42,7 @@ type Webhook struct {
 type ConfigRepository struct {
 	Name     string
 	Commands []string
+	Long     bool
 }
 
 //Config represents the config file
@@ -160,14 +161,24 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 
 		//execute commands for repository
 		for _, cmd := range repo.Commands {
-			var command = exec.Command(cmd)
-			out, err := command.Output()
-			if err != nil {
-				log.Println(err)
+			log.Println("Webhook runned for project: " + repo.Name)
+			if repo.Long {
+				go execute(cmd)
 			} else {
-				log.Println("Executed: " + cmd)
-				log.Println("Output: " + string(out))
+				execute(cmd)
 			}
+
 		}
+	}
+}
+
+func execute(cmd string) {
+	var command = exec.Command(cmd)
+	out, err := command.Output()
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("Executed: " + cmd)
+		log.Println("Output: " + string(out))
 	}
 }

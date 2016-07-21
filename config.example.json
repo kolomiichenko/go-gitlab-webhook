@@ -14,7 +14,8 @@
       "name": "foobar",
       "commands": [
         "/usr/bin/true"
-      ]
+      ],
+      "long": true
     }
   ]
 }
