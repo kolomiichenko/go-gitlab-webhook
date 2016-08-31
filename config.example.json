@@ -15,7 +15,8 @@
       "commands": [
         "/usr/bin/true"
       ],
-      "long": true
+      "long": true,
+      "branch": "master"
     }
   ]
 }

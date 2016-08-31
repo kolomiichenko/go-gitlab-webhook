@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -43,6 +44,7 @@ type ConfigRepository struct {
 	Name     string
 	Commands []string
 	Long     bool
+	Branch   string
 }
 
 //Config represents the config file
@@ -156,6 +158,17 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 	//find matching config for repository name
 	for _, repo := range config.Repositories {
 		if repo.Name != hook.Repository.Name {
+			continue
+		}
+
+		if len(repo.Branch) == 0 {
+			repo.Branch = "master"
+		}
+
+		refSlice := strings.Split(hook.Ref, "/")
+		branch := refSlice[len(refSlice)-1]
+
+		if repo.Branch != branch {
 			continue
 		}
 
