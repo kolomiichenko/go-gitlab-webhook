@@ -117,22 +117,20 @@ func main() {
 }
 
 func loadConfig(configFile string) Config {
-	var file, err = os.Open(configFile)
-	PanicIf(err)
 
-	// close file on exit and check for its returned error
-	defer func() {
-		err := file.Close()
-		PanicIf(err)
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGHUP)
+
+	go func() {
+		<-sigc
+		config = loadConfig(configFile)
+		log.Println("config reloaded")
 	}()
 
-	buffer := make([]byte, 1024)
-	count := 0
-
-	count, err = file.Read(buffer)
+	buffer, err := ioutil.ReadFile(configFile)
 	PanicIf(err)
 
-	err = json.Unmarshal(buffer[:count], &config)
+	err = json.Unmarshal(buffer, &config)
 	PanicIf(err)
 
 	return config
@@ -155,6 +153,12 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(data, &hook)
 	PanicIf(err, "while unmarshaling request")
 
+	refSlice := strings.Split(hook.Ref, "/")
+	branch := refSlice[len(refSlice)-1]
+
+	log.Println("hook.Ref: ", hook.Ref)
+	log.Println("Branch: ", branch)
+
 	//find matching config for repository name
 	for _, repo := range config.Repositories {
 		if repo.Name != hook.Repository.Name {
@@ -164,9 +168,6 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 		if len(repo.Branch) == 0 {
 			repo.Branch = "master"
 		}
-
-		refSlice := strings.Split(hook.Ref, "/")
-		branch := refSlice[len(refSlice)-1]
 
 		if repo.Branch != branch {
 			continue
