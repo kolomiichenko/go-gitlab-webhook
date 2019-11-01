@@ -50,6 +50,7 @@ type ConfigRepository struct {
 //Config represents the config file
 type Config struct {
 	Logfile      string
+	ExecToStd    bool `json:"execToStd"`
 	Address      string
 	Port         int64
 	Repositories []ConfigRepository
@@ -189,10 +190,22 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 func execute(cmd string) {
 	var command = exec.Command(cmd)
 	out, err := command.Output()
+
+	logger := log.New(os.Stdout, "[webhook] ", log.LstdFlags)
+
 	if err != nil {
-		log.Println(err)
+		if config.ExecToStd {
+			logger.Println(err)
+		} else {
+			log.Println(err)
+		}
 	} else {
-		log.Println("Executed: " + cmd)
-		log.Println("Output: " + string(out))
+		if config.ExecToStd {
+			logger.Println("Executed: " + cmd)
+			logger.Println("Output: " + string(out))
+		} else {
+			log.Println("Executed: " + cmd)
+			log.Println("Output: " + string(out))
+		}
 	}
 }

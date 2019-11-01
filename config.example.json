@@ -1,5 +1,6 @@
 {
   "logfile": "log.log",
+  "execToStd": true,
   "address": "0.0.0.0",
   "port": 3344,
   "repositories": [
