@@ -195,9 +195,11 @@ func execute(cmd string) {
 
 	if err != nil {
 		if config.ExecToStd {
-			logger.Println(err)
+			logger.Println("Out before error: ", string(out))
+			logger.Println("Error: ", err.Error())
 		} else {
-			log.Println(err)
+			log.Println("Out before error: ", string(out))
+			log.Println("Error: ", err.Error())
 		}
 	} else {
 		if config.ExecToStd {
